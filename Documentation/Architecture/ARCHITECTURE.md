@@ -204,6 +204,8 @@ Gestures and Physics integrations should follow only after the core inference an
 
 
 
+[Workshop runtime integration](WORKSHOP_RUNTIME_INTEGRATION.md) defines the concrete ownership and handoff boundaries described below.
+
 ### Workshop execution and composition boundary
 
 NeuralNetworks must use the Workshop runtime rather than introduce a competing executor.
