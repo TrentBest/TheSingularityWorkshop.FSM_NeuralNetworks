@@ -150,6 +150,43 @@ This fixture must be reused for:
 - Future backend semantic conformance tests, with the documented backend tolerance policy.
 - Educational documentation showing inputs, weights, biases, pre-activation values, activation, and outputs.
 
+## 8. Final MVP precision decisions
+
+**Disposition: Proposed clarifications responding to the follow-up review.**
+
+### Element type
+
+The MVP evaluator accepts only IEEE 754 binary64 (double) tensors and parameters. Any other element type is rejected during model/request validation. Future backends may advertise additional types only through separately named conformance profiles; they do not silently widen the MVP contract.
+
+### Dense operation
+
+For an input vector of length n, output width m, weights shaped [m,n], and bias shaped [m], output unit j is:
+
+    z_j = b_j + sum(i = 0..n-1, x_i * W[j,i])
+
+The evaluator accumulates input features in ascending index order, then adds the bias once. Weight row j belongs to output unit j; weight column i belongs to input feature i. The input shape is [n], weight shape is [m,n], bias shape is [m], and output shape is [m]. The acceptance fixture therefore has input [2], weights [2,2], bias [2], and output [2].
+
+### MVP operation set and graph validation
+
+The first evaluator supports exactly these operation kinds:
+
+- Input: declares a named input port and its fixed logical shape/type.
+- Dense: consumes one input tensor plus immutable weights and bias, and produces one affine output.
+- ReLU: consumes one tensor and produces one tensor of the same shape/type.
+
+Before execution, validation must establish unique stable node identities; known operation kinds; required ports; valid edge endpoints; one producer per non-input port; no missing required inputs; no duplicate/ambiguous edges; compatible shapes and element types; and a valid topological order. Cycles, unknown operations, unsupported element types, malformed ports, and shape mismatches fail validation. The evaluator must not skip or reinterpret unknown nodes.
+
+### Enforceable request budget
+
+Every evaluation requires an enforceable finite budget. It may be supplied by the request or inherited from an explicitly configured evaluator policy. If neither supplies a complete enforceable budget, the request is rejected before execution. The policy must bound at least input elements, graph nodes/operations, intermediate/result memory, trace records or bytes, and execution time/cancellation observation. The selected values are configuration, not universal library constants; the evaluator must enforce them and return a budget-exceeded outcome when a limit is crossed. An unbounded/default-unlimited mode is not part of the MVP.
+
+A Foundry host may derive and pass an inference budget from its own run policy, but Foundry's workflow context JSON size limits are not neural-compute budgets and must not be reused as if they were. Foundry remains responsible for run lifecycle and scheduling; NeuralNetworks enforces the computation-specific limits within its evaluator/provider boundary.
+
+### Numerical failure
+
+Any non-finite value detected during multiplication/accumulation, bias addition, or activation is a numerical execution failure (category: NumericalFailure). The evaluator must not return a successful partial result. It may return bounded diagnostic/trace evidence that identifies the failing node/port and model version, subject to the trace budget. Invalid non-finite inputs/parameters remain validation failures; non-finite values generated during evaluation are execution failures.
+
+
 ## Deferred evidence items
 
 These are intentionally not selected by this record:
