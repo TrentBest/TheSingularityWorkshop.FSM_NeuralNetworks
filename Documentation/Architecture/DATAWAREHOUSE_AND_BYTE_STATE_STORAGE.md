@@ -104,3 +104,33 @@ The current DataShelf contract is not thread-safe for concurrent mutation of a s
 - Should GPU-resident resources be registered directly with DataWarehouse, or through a DataWarehouse-owned backend resource provider?
 - Which target GPU and API will validate integer texture support and exact state access?
 - What is the required consistency model between host shelf state and GPU texture state?
+
+
+## 9. DataWarehouse shelf ownership and neural record mapping (development addendum)
+
+The DataWarehouse domain has clarified its performance-first parallelism contract: **independent shelf ownership**. A shelf is a page-aligned storage/metadata unit, not a synchronized work queue. Separate shelves may be processed in parallel when each is assigned to one worker/owner for the duration of access. Shared mutation of one shelf is unsupported unless a caller supplies external synchronization. A worker must stop using every ref or raw address obtained from a shelf before that shelf is freed or disposed. This is an ownership contract, not a claim that DataShelf is internally thread-safe.
+
+### Neural storage mapping
+
+Use DataWarehouse shelves for high-volume, fixed-layout unmanaged records whose access patterns benefit from this model. Partition independently writable regions into separately owned shelves where practical; do not have multiple workers mutate the same shelf's allocator, bitmaps, counters, or records concurrently. A read-only sharing phase is valid only while the owner guarantees no mutation, free, or disposal for the phase's full duration.
+
+Keep these identities distinct:
+
+- **Domain identity:** stable neural model, tensor, parameter, node, or FSM-state identity owned by NeuralNetworks.
+- **DataWarehouse identity:** a generation-checked handle locating one live fixed-size record in one shelf. It is an in-memory locator, not a durable ID.
+- **Device identity:** backend-specific resource/region identity for a GPU allocation. It must not be inferred from a DataHandle or raw host pointer.
+
+A handle can locate metadata describing a tensor or region, but it does not imply that an arbitrarily large tensor payload should be stored as one DataShelf<T> record. Separate compact metadata from bulk tensor storage. Use typed shelves for fixed-size metadata/state records; represent bulk tensor storage through a separately specified DataWarehouse-owned region/resource contract that defines size, alignment, host/device residency, dirty-region direction, completion, and disposal. That region contract is not implemented yet and must not be simulated by leaking BaseAddress or by giving a backend adapter an unrelated long-lived allocator.
+
+### Lifetime and scheduling rules
+
+- Foundry schedules work while preserving exclusive writable ownership of each shelf/region, or delegates coordination to a higher layer that explicitly owns shared mutation.
+- DataWarehouse remains responsible for storage lifetime; backend adapters report completion before a device resource/region can be reused or disposed.
+- Do not dispose a shelf or invalidate its handles while CPU workers or GPU work can still access the corresponding data.
+- A DataHandle is not a lease and does not prevent reclamation. The current API returns refs whose lifetime is not bounded by a method call; callers must enforce worker quiescence before free/dispose.
+- BaseAddress is documented by DataWarehouse as an unsafe diagnostic escape hatch. NeuralNetworks must not use it as its normal integration API.
+- DataWarehouse's allocation/lifetime fixes and generation retirement improve correctness, but do not establish shared-shelf concurrency or GPU fence ownership.
+
+### Byte-state encoding remains an explicit contract decision
+
+The 0–255 representable range does not itself decide whether 255 is reserved. Keep the two policies open until the first concrete state field and its invalid/uninitialized semantics are specified: 256 valid values with no in-band sentinel, or 255 valid values with 255 reserved. Do not silently adopt the previous suggested default as a user-approved decision. In either policy, the semantic state identity and mapping version remain authoritative; the byte index is a local encoding.
