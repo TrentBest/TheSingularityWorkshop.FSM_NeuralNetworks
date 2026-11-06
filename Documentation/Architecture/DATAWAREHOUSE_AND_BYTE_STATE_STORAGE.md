@@ -33,7 +33,7 @@ A byte has 256 representable values (0 through 255). The encoding contract must 
 - **All values valid:** state indexes 0–255, for 256 states; no byte value is available as an in-band sentinel.
 - **Sentinel reserved:** state indexes 0–254, for 255 states; 255 represents invalid, uninitialized, or no-state.
 
-The initial implementation should use the sentinel-reserved policy unless a concrete state-machine contract requires all 256 values. State indexes are local encoding values, not durable semantic identities. A stable state-identity-to-byte-index mapping must be versioned with the machine/model definition; reordering states must not silently reinterpret persisted or in-flight bytes.
+Neither policy is selected yet. Choose only after the first concrete state-machine field defines its cardinality and invalid/uninitialized semantics. State indexes are local encoding values, not durable semantic identities. A stable state-identity-to-byte-index mapping must be versioned with the machine/model definition; reordering states must not silently reinterpret persisted or in-flight bytes.
 
 The byte representation is for discrete FSM state identity only. It must not be generalized to neural weights, activations, gradients, or arbitrary tensor values, whose element type and precision follow the tensor/backend contract.
 
@@ -134,3 +134,73 @@ A handle can locate metadata describing a tensor or region, but it does not impl
 ### Byte-state encoding remains an explicit contract decision
 
 The 0–255 representable range does not itself decide whether 255 is reserved. Keep the two policies open until the first concrete state field and its invalid/uninitialized semantics are specified: 256 valid values with no in-band sentinel, or 255 valid values with 255 reserved. Do not silently adopt the previous suggested default as a user-approved decision. In either policy, the semantic state identity and mapping version remain authoritative; the byte index is a local encoding.
+
+
+## 10. Proposed neural record layout (design proposal; not an implementation)
+
+This section makes the first DataWarehouse mapping concrete without pretending that the future bulk-region or GPU-resource API already exists. All record shapes below are conceptual contracts. Exact field widths, packing, and public types must be validated against the consuming model/runtime requirements before implementation.
+
+### Fixed-size records in typed shelves
+
+| Record | Suggested contents | Storage role |
+|---|---|---|
+| Model record | Stable model ID; immutable model-version ID; graph/root descriptor handle; lifecycle/version metadata | One fixed-size record per published model version |
+| Node record | Stable node ID; model-version ID; operation kind; input/output descriptor handles; operation-specific metadata handle | Graph topology and execution metadata |
+| Tensor descriptor | Stable tensor ID; model-version ID; element type; rank; dimensions/strides descriptor; logical byte length; bulk-region reference; layout/version flags | Describes a tensor without embedding its payload |
+| Parameter descriptor | Stable parameter ID; owning model-version ID; tensor descriptor handle; trainability/role flags; parameter version | Parameter identity and association |
+| FSM state-map descriptor | Stable FSM ID; mapping version; state count; encoding policy (256-valid or sentinel-reserved); mapping-table reference | Governs interpretation of compact state bytes |
+| Work/partition descriptor | Stable work-partition ID; model-version ID; owned shelf/region references; read/write mode; completion generation | Lets Foundry schedule explicit ownership units |
+
+The table deliberately separates stable domain IDs from DataHandle values. Handles are short-lived, generation-checked locators into a particular DataWarehouse instance; they must not be serialized as durable model identity or treated as authorization.
+
+Typed shelves should contain fixed-size unmanaged metadata records. Avoid putting variable-length arrays, arbitrary tensor payloads, managed references, or backend objects inside these records. A descriptor may refer to a bulk region, but that reference is only conceptual until DataWarehouse defines and implements the region/resource contract.
+
+### Bulk tensor payloads
+
+Large weights, activations, gradients, and other tensor values are not one-record DataShelf<T> allocations. Their storage requires a DataWarehouse-governed region contract with, at minimum:
+
+- logical length and element type, plus checked physical byte length;
+- alignment, allocation extent, and any page/tiling/row-pitch overhead;
+- host residency, device residency, or an explicitly defined dual representation;
+- region identity and generation distinct from both neural domain IDs and DataHandle;
+- dirty-region tracking with an unambiguous source/destination direction;
+- ownership transfer or borrow rules for CPU workers and GPU submissions;
+- completion/fence ownership, safe reuse, cancellation, and disposal behavior;
+- accounting for payload bytes, alignment waste, metadata, alive/dirty bitmaps, and staging copies.
+
+Until that contract exists, the architecture may describe intended payload placement but must not allocate unrelated long-lived backend buffers and call them DataWarehouse-owned.
+
+### Discrete FSM state pages
+
+A bounded FSM state field is a good candidate for compact fixed-layout storage. The logical representation is one unsigned byte per state element. The physical representation may be a typed byte shelf on the host and, when supported by a selected backend, an integer texture channel on the device.
+
+The state-map descriptor must define:
+- stable semantic state IDs and their mapping to byte indexes;
+- a mapping version that changes whenever interpretation changes;
+- whether 255 is a valid index or a reserved invalid/uninitialized value;
+- behavior for unknown IDs, unknown mapping versions, and out-of-range bytes;
+- the page/region ownership unit used by Foundry so writable state updates do not race on one shelf/region.
+
+Do not put semantic state IDs directly into the byte field. The byte is a versioned local encoding. A state-map change must either migrate the stored bytes or reject them as belonging to an incompatible mapping; silently reinterpreting old bytes is invalid.
+
+### Capacity and accounting model
+
+For a fixed-size record type of size S, capacity N, and configured alignment/page unit P, the payload request is N × S, while the actual allocation extent is rounded according to DataWarehouse's allocation rule. Account separately for:
+
+1. record payload bytes;
+2. rounded allocation/alignment overhead;
+3. alive and dirty bitmap storage;
+4. generation and free-slot metadata;
+5. shelf/region descriptors and stable-ID mapping tables;
+6. bulk tensor payloads and any staging/transfer allocations;
+7. device allocation granularity, texture row pitch, and backend metadata.
+
+Do not publish a single memory-footprint estimate until actual record layouts, capacities, mapping-table representation, and backend allocation rules are selected. The formulas above are a sizing checklist, not a measured result.
+
+### Implementation gates
+
+1. Review and accept the logical record fields and stable-ID/version rules.
+2. Confirm the DataWarehouse region/provider contract in coordination with DataWarehouse issue #7.
+3. Select the first concrete FSM state field and decide the 255-versus-256 encoding policy from its semantics.
+4. Define exact unmanaged layouts and tests for serialization/round-trip, handle generation, mapping-version rejection, and independent-shelf ownership.
+5. Implement host-side metadata mapping only after those contracts are accepted; GPU residency remains blocked on the region/provider and completion contract.
