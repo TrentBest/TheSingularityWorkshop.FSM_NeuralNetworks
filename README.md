@@ -10,7 +10,6 @@ NeuralNetworks owns backend-neutral neural model semantics and bounded computati
 
 The design is intentionally **GPU-first, not GPU-only**. The CPU reference path establishes correctness and portability; it is not evidence of GPU acceleration and must never silently replace a requested accelerator.
 
-<badge-placeholder>
 
 **Current status:** architecture and MVP contracts are documented on `development`. The first CPU inference implementation has not been started. The MVP contract is ready for explicit owner acceptance or amendment. No GPU backend has been selected, and no NuGet publication is authorized.
 
