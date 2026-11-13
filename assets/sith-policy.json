@@ -11,7 +11,7 @@
   ],
   "branch_count": 2,
   "status": "COMPLIANT",
-  "evaluated_at": "2026-11-12T12:50:51Z",
-  "workflow_run": "https://github.com/TrentBest/TheSingularityWorkshop.FSM_NeuralNetworks/actions/runs/43221644287",
-  "triggering_commit": "5cc0ddc2c72da5fc633749db963c740708c0162a"
+  "evaluated_at": "2026-11-13T12:18:39Z",
+  "workflow_run": "https://github.com/TrentBest/TheSingularityWorkshop.FSM_NeuralNetworks/actions/runs/43424057701",
+  "triggering_commit": "3291d3f08ab47cd4d03e23cb04f52a12b1fd71e5"
 }
