@@ -45,7 +45,7 @@ The expected output is `[4, 3]`. This fixture is intended to become the shared C
 | [DataWarehouse and byte-state storage](Documentation/Architecture/DATAWAREHOUSE_AND_BYTE_STATE_STORAGE.md) | Storage ownership, neural record mapping, bulk tensor regions, and discrete FSM-state encoding |
 | [Workshop runtime integration](Documentation/Architecture/WORKSHOP_RUNTIME_INTEGRATION.md) | FSM_COS composition, FSM_Execution lifecycle, provider boundaries, and Hermit authority |
 
-These documents distinguish accepted architectural direction, proposed implementation details, and capabilities that do not yet exist. In particular, the DataWarehouse GPU resource/region contract and the Foundry RuntimeAssembly execution handoff are not claimed to be implemented.
+These documents distinguish accepted architectural direction, proposed implementation details, and capabilities that do not yet exist. In particular, the DataWarehouse GPU resource/region contract and the FSM_Execution RuntimeAssembly execution handoff are not claimed to be implemented.
 
 ## 4. Workshop boundaries
 
