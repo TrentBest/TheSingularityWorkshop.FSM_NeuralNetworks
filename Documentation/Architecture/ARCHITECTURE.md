@@ -228,7 +228,7 @@ Experience manifest + configuration
           RuntimeAssembly
                 |
                 v
-        Foundry execution
+        FSM_Execution execution
           /          \
   execution provider  lifecycle / scheduling
           |
@@ -242,7 +242,7 @@ Experience manifest + configuration
  host / Hermit / Visualize presentation
 ~~~
 
-This is an architectural target, not a claim that the end-to-end adapter already exists. Foundry issue #23 tracks the typed RuntimeAssembly handoff; Foundry issue #2 tracks scheduling composed MicroBundle work from declared intent. The current Foundry workflow runner is a sequential named-handler workflow executor; it is not yet the RuntimeAssembly executor. Do not pretend that a neural graph, a Foundry workflow, an FSM_API process group, and a RuntimeAssembly are interchangeable.
+This is an architectural target, not a claim that the end-to-end adapter already exists. FSM_Execution issue #23 tracks the typed RuntimeAssembly handoff; FSM_Execution issue #2 tracks scheduling composed MicroBundle work from declared intent. The current FSM_Execution workflow runner is a sequential named-handler workflow executor; it is not yet the RuntimeAssembly executor. Do not pretend that a neural graph, a FSM_Execution workflow, an FSM_API process group, and a RuntimeAssembly are interchangeable.
 
 For the first neural slice, keep the neural computation graph internal to NeuralNetworks. Foundry should schedule a bounded neural evaluation capability through its supported execution/provider seam. The neural evaluator validates and executes its own DAG in deterministic topological order. Only expose graph operations as separately schedulable work when the upstream scheduling contract, dependency semantics, and measured benefit justify that granularity. Producer/consumer dependencies must never be reordered by priority; independent operations may be parallelized only under an explicit, tested synchronization and resource contract.
 
