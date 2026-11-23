@@ -54,13 +54,13 @@ These documents distinguish accepted architectural direction, proposed implement
 | NeuralNetworks | Neural semantics, validation, bounded evaluation, and computation traces |
 | DataWarehouse | Storage allocation, shelves, handles, liveness, dirty tracking, and storage lifetime |
 | FSM_COS | MicroBundle composition, validation, loading, and arbitration |
-| Foundry | Execution lifecycle, scheduling, dispatch, cancellation, cleanup, and outcomes |
+| FSM_Execution | Execution lifecycle, scheduling, dispatch, cancellation, cleanup, and outcomes |
 | FSM_API | FSM mechanics where an actual state/context contract is required |
 | Hermit | Goals, observations, policy, permissions, planning, and action authority |
 | Gestures / Physics | Optional embodiment and environment interfaces for later experiments |
 | Visualize | Presentation of actual execution evidence; it must not recompute neural results |
 
-The neural graph remains internal to NeuralNetworks and is evaluated as one bounded capability. It is not automatically expanded into FSM states or Foundry workflow steps.
+The neural graph remains internal to NeuralNetworks and is evaluated as one bounded capability. It is not automatically expanded into FSM states or FSM_Execution workflow steps.
 
 ## 5. Development and guardrails
 
