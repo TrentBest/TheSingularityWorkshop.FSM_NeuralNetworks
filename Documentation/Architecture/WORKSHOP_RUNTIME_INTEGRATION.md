@@ -10,7 +10,7 @@ NeuralNetworks is a computational capability. It is not the Workshop's applicati
 |---|---|---|
 | MicroBundleDomain | Neutral identity, dependencies, providers, configuration, load and arbitration contracts | Optional capability packaging seam; neural semantics stay in NeuralNetworks |
 | FSM_COS | Resolve, validate, load, arbitrate MicroBundles; return RuntimeAssembly | Composes the requested neural capability with its dependencies |
-| Foundry | Execution lifecycle, scheduling orchestration, eligibility, dispatch, cancellation, cleanup, state and outcomes | Executes bounded neural work through a supported provider/adapter |
+| FSM_Execution | Execution lifecycle, scheduling orchestration, eligibility, dispatch, cancellation, cleanup, state and outcomes | Executes bounded neural work through a supported provider/adapter |
 | FSM_API | Finite-state-machine and context mechanics | Used only where a real integration needs FSM mechanics |
 | Host | Environment, permissions, capability registration, platform resources | Supplies and authorizes providers/resources |
 | GUI / Visualize | Presentation and visualization | Presents status and actual neural execution evidence; does not execute or recompute the model |
@@ -28,7 +28,7 @@ Experience manifest + configuration
           RuntimeAssembly
                 |
                 v
-        Foundry execution
+        FSM_Execution execution
                 |
                 v
    registered execution provider
@@ -47,7 +47,7 @@ The boundaries are deliberately non-interchangeable:
 
 - A RuntimeManifest describes composition input; it is not a workflow definition.
 - A RuntimeAssembly is the result of composition; it is not a running application or a workflow result.
-- A Foundry workflow is an ordered workflow contract; it is not a neural computation graph.
+- A FSM_Execution workflow is an ordered workflow contract; it is not a neural computation graph.
 - An FSM_API process group is an FSM update mechanism; it is not a general tensor-operation scheduler.
 - A neural computation DAG defines mathematical dependencies; it does not own host scheduling, cancellation, or application lifecycle.
 
@@ -61,13 +61,13 @@ The boundaries are deliberately non-interchangeable:
 - Neural evaluation results and optional bounded traces from the actual execution.
 - Training algorithms later, under separate data, gradient, optimizer, reproducibility, and resource contracts.
 
-The initial neural graph remains internal to NeuralNetworks. It is evaluated in deterministic topological order as one bounded capability. Do not make each graph node a Foundry workflow step or FSM state by default. That would couple mathematical representation to runtime scheduling and add orchestration overhead. If later profiling shows a need for finer-grained scheduling, represent producer/consumer dependencies explicitly and let Foundry interpret declared scheduling intent; priority must never violate data dependencies.
+The initial neural graph remains internal to NeuralNetworks. It is evaluated in deterministic topological order as one bounded capability. Do not make each graph node a FSM_Execution workflow step or FSM state by default. That would couple mathematical representation to runtime scheduling and add orchestration overhead. If later profiling shows a need for finer-grained scheduling, represent producer/consumer dependencies explicitly and let FSM_Execution interpret declared scheduling intent; priority must never violate data dependencies.
 
 ## What Foundry owns
 
 Foundry owns the authoritative lifecycle and scheduling decisions around submitted work: acceptance, start, eligibility, dispatch, observable progress/outcomes, cancellation, and cleanup. Concrete providers perform work on available resources. NeuralNetworks does not create its own competing run coordinator, global scheduler, host loop, or cancellation authority.
 
-The current Foundry WorkflowRunner is a sequential named-handler workflow executor with validation-before-side-effects and structured outcomes. It is not yet the RuntimeAssembly executor. The typed RuntimeAssembly handoff is tracked in [Foundry issue #23](https://github.com/TrentBest/TheSingularityWorkshop.FSM_Foundry/issues/23); composed MicroBundle scheduling intent is tracked in [Foundry issue #2](https://github.com/TrentBest/TheSingularityWorkshop.FSM_Foundry/issues/2). These are upstream integration dependencies, not capabilities this repository should duplicate.
+The current Foundry WorkflowRunner is a sequential named-handler workflow executor with validation-before-side-effects and structured outcomes. It is not yet the RuntimeAssembly executor. The typed RuntimeAssembly handoff is tracked in [FSM_Execution issue #23](https://github.com/TrentBest/TheSingularityWorkshop.FSM_Execution/issues/23); composed MicroBundle scheduling intent is tracked in [FSM_Execution issue #2](https://github.com/TrentBest/TheSingularityWorkshop.FSM_Execution/issues/2). These are upstream integration dependencies, not capabilities this repository should duplicate.
 
 Foundry's bounded JSON workflow context is for exchanging run data. Its entry/byte/depth limits are not neural tensor, graph-work, intermediate-memory, or trace budgets. A Foundry host can derive an explicit neural evaluation budget from host policy and pass it to NeuralNetworks; NeuralNetworks must enforce its own computation-specific limits.
 
@@ -104,7 +104,7 @@ These integrations should be added only when a concrete consumer needs them and 
 
 This document records intended architecture, not completed integration. In particular:
 
-- NeuralNetworks does not yet consume a Foundry execution-provider contract.
+- NeuralNetworks does not yet consume a FSM_Execution execution-provider contract.
 - Foundry does not yet accept and execute FSM_COS RuntimeAssembly through the tracked typed handoff.
 - No target GPU/runtime has been selected or verified.
 - No training implementation or embodied Hermit experiment is claimed.
