@@ -63,13 +63,13 @@ The boundaries are deliberately non-interchangeable:
 
 The initial neural graph remains internal to NeuralNetworks. It is evaluated in deterministic topological order as one bounded capability. Do not make each graph node a FSM_Execution workflow step or FSM state by default. That would couple mathematical representation to runtime scheduling and add orchestration overhead. If later profiling shows a need for finer-grained scheduling, represent producer/consumer dependencies explicitly and let FSM_Execution interpret declared scheduling intent; priority must never violate data dependencies.
 
-## What Foundry owns
+## What FSM_Execution owns
 
-Foundry owns the authoritative lifecycle and scheduling decisions around submitted work: acceptance, start, eligibility, dispatch, observable progress/outcomes, cancellation, and cleanup. Concrete providers perform work on available resources. NeuralNetworks does not create its own competing run coordinator, global scheduler, host loop, or cancellation authority.
+FSM_Execution owns the authoritative lifecycle and scheduling decisions around submitted work: acceptance, start, eligibility, dispatch, observable progress/outcomes, cancellation, and cleanup. Concrete providers perform work on available resources. NeuralNetworks does not create its own competing run coordinator, global scheduler, host loop, or cancellation authority.
 
-The current Foundry WorkflowRunner is a sequential named-handler workflow executor with validation-before-side-effects and structured outcomes. It is not yet the RuntimeAssembly executor. The typed RuntimeAssembly handoff is tracked in [FSM_Execution issue #23](https://github.com/TrentBest/TheSingularityWorkshop.FSM_Execution/issues/23); composed MicroBundle scheduling intent is tracked in [FSM_Execution issue #2](https://github.com/TrentBest/TheSingularityWorkshop.FSM_Execution/issues/2). These are upstream integration dependencies, not capabilities this repository should duplicate.
+The current FSM_Execution WorkflowRunner is a sequential named-handler workflow executor with validation-before-side-effects and structured outcomes. It is not yet the RuntimeAssembly executor. The typed RuntimeAssembly handoff is tracked in [FSM_Execution issue #23](https://github.com/TrentBest/TheSingularityWorkshop.FSM_Execution/issues/23); composed MicroBundle scheduling intent is tracked in [FSM_Execution issue #2](https://github.com/TrentBest/TheSingularityWorkshop.FSM_Execution/issues/2). These are upstream integration dependencies, not capabilities this repository should duplicate.
 
-Foundry's bounded JSON workflow context is for exchanging run data. Its entry/byte/depth limits are not neural tensor, graph-work, intermediate-memory, or trace budgets. A Foundry host can derive an explicit neural evaluation budget from host policy and pass it to NeuralNetworks; NeuralNetworks must enforce its own computation-specific limits.
+FSM_Execution's bounded JSON workflow context is for exchanging run data. Its entry/byte/depth limits are not neural tensor, graph-work, intermediate-memory, or trace budgets. A FSM_Execution host can derive an explicit neural evaluation budget from host policy and pass it to NeuralNetworks; NeuralNetworks must enforce its own computation-specific limits.
 
 ## What FSM_COS owns
 
@@ -87,7 +87,7 @@ The evaluator defines what an operation means. A backend/provider defines how th
 - Performance claims require named hardware, warm-up and workload details, transfer/dispatch/synchronization costs, memory measurements, and end-to-end comparison.
 - No GPU SDK should be selected merely because it is familiar; first establish actual target hardware, OS, deployment, and maintenance constraints.
 
-A Foundry provider adapter is the likely integration seam, but its exact interface must be based on Foundry's source-backed provider contracts and the RuntimeAssembly handoff work—not invented here.
+A FSM_Execution provider adapter is the likely integration seam, but its exact interface must be based on FSM_Execution's source-backed provider contracts and the RuntimeAssembly handoff work—not invented here.
 
 ## Consumers and optional integrations
 
@@ -105,8 +105,8 @@ These integrations should be added only when a concrete consumer needs them and 
 This document records intended architecture, not completed integration. In particular:
 
 - NeuralNetworks does not yet consume a FSM_Execution execution-provider contract.
-- Foundry does not yet accept and execute FSM_COS RuntimeAssembly through the tracked typed handoff.
+- FSM_Execution does not yet accept and execute FSM_COS RuntimeAssembly through the tracked typed handoff.
 - No target GPU/runtime has been selected or verified.
 - No training implementation or embodied Hermit experiment is claimed.
 
-The integration order is therefore: settle the NeuralNetworks MVP contracts; implement and test the small evaluator; verify the Foundry provider and RuntimeAssembly seams against their upstream work; then add a narrow end-to-end composed execution proof. Keep the neural core independently testable throughout.
+The integration order is therefore: settle the NeuralNetworks MVP contracts; implement and test the small evaluator; verify the FSM_Execution provider and RuntimeAssembly seams against their upstream work; then add a narrow end-to-end composed execution proof. Keep the neural core independently testable throughout.
