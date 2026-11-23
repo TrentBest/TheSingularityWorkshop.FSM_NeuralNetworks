@@ -6,12 +6,13 @@
     "master"
   ],
   "actual_branches": [
+    "chore/align-execution-owner-name",
     "development",
     "master"
   ],
-  "branch_count": 2,
-  "status": "COMPLIANT",
-  "evaluated_at": "2026-11-22T12:39:33Z",
-  "workflow_run": "https://github.com/TrentBest/TheSingularityWorkshop.FSM_NeuralNetworks/actions/runs/45023412384",
-  "triggering_commit": "927e232d90fe19c679faa0e52ca41ba775f0bc2f"
+  "branch_count": 3,
+  "status": "NON-COMPLIANT",
+  "evaluated_at": "2026-11-23T14:51:06Z",
+  "workflow_run": "https://github.com/TrentBest/TheSingularityWorkshop.FSM_NeuralNetworks/actions/runs/45198073190",
+  "triggering_commit": "17531e62b6980632151c48b388cd101e8599e9fd"
 }
