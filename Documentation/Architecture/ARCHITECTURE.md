@@ -210,10 +210,10 @@ Gestures and Physics integrations should follow only after the core inference an
 
 NeuralNetworks must use the Workshop runtime rather than introduce a competing executor.
 
-- **MicroBundleDomain defines the capability contract.** A neural capability may be authored as a MicroBundle when it needs to participate in composition. NeuralNetworks owns neural semantics; it must not depend on FSM_COS or Foundry merely to define a model or operation.
+- **MicroBundleDomain defines the capability contract.** A neural capability may be authored as a MicroBundle when it needs to participate in composition. NeuralNetworks owns neural semantics; it must not depend on FSM_COS or FSM_Execution merely to define a model or operation.
 - **FSM_COS composes.** It resolves, validates, loads, and arbitrates requested MicroBundles, then returns a RuntimeAssembly. It does not schedule application work or execute a neural model.
-- **Foundry executes.** It owns authoritative execution lifecycle, scheduling orchestration, eligibility, dispatch, cancellation, cleanup, observable state, and outcomes. Concrete execution providers perform work on supported resources.
-- **FSM_API supplies FSM mechanics** where the chosen Foundry integration actually uses them. Neural graph nodes are not automatically FSM states, and FSM_API process-group ticks are not a substitute for a neural graph evaluator.
+- **FSM_Execution executes.** It owns authoritative execution lifecycle, scheduling orchestration, eligibility, dispatch, cancellation, cleanup, observable state, and outcomes. Concrete execution providers perform work on supported resources.
+- **FSM_API supplies FSM mechanics** where the chosen FSM_Execution integration actually uses them. Neural graph nodes are not automatically FSM states, and FSM_API process-group ticks are not a substitute for a neural graph evaluator.
 - **Hosts adapt and authorize.** AnyApp, WebApp, ServerApp, MyVR, headless/CI hosts, and The can provide host capabilities and present results. GUI is presentation, not execution authority.
 
 The intended path is:
@@ -228,7 +228,7 @@ Experience manifest + configuration
           RuntimeAssembly
                 |
                 v
-        Foundry execution
+        FSM_Execution execution
           /          \
   execution provider  lifecycle / scheduling
           |
@@ -242,15 +242,15 @@ Experience manifest + configuration
  host / Hermit / Visualize presentation
 ~~~
 
-This is an architectural target, not a claim that the end-to-end adapter already exists. Foundry issue #23 tracks the typed RuntimeAssembly handoff; Foundry issue #2 tracks scheduling composed MicroBundle work from declared intent. The current Foundry workflow runner is a sequential named-handler workflow executor; it is not yet the RuntimeAssembly executor. Do not pretend that a neural graph, a Foundry workflow, an FSM_API process group, and a RuntimeAssembly are interchangeable.
+This is an architectural target, not a claim that the end-to-end adapter already exists. FSM_Execution issue #23 tracks the typed RuntimeAssembly handoff; FSM_Execution issue #2 tracks scheduling composed MicroBundle work from declared intent. The current FSM_Execution workflow runner is a sequential named-handler workflow executor; it is not yet the RuntimeAssembly executor. Do not pretend that a neural graph, a FSM_Execution workflow, an FSM_API process group, and a RuntimeAssembly are interchangeable.
 
-For the first neural slice, keep the neural computation graph internal to NeuralNetworks. Foundry should schedule a bounded neural evaluation capability through its supported execution/provider seam. The neural evaluator validates and executes its own DAG in deterministic topological order. Only expose graph operations as separately schedulable work when the upstream scheduling contract, dependency semantics, and measured benefit justify that granularity. Producer/consumer dependencies must never be reordered by priority; independent operations may be parallelized only under an explicit, tested synchronization and resource contract.
+For the first neural slice, keep the neural computation graph internal to NeuralNetworks. FSM_Execution should schedule a bounded neural evaluation capability through its supported execution/provider seam. The neural evaluator validates and executes its own DAG in deterministic topological order. Only expose graph operations as separately schedulable work when the upstream scheduling contract, dependency semantics, and measured benefit justify that granularity. Producer/consumer dependencies must never be reordered by priority; independent operations may be parallelized only under an explicit, tested synchronization and resource contract.
 
-The CPU reference evaluator is a correctness implementation, not a new lifecycle manager or hidden fallback for a requested accelerator. A future GPU implementation belongs behind a NeuralNetworks-owned backend-neutral semantic contract and a concrete execution-provider adapter. Backend selection, capability reporting, transfers, completion, and fallback must be visible to Foundry/host callers. Do not add a direct GPU SDK dependency until hardware/runtime reconnaissance supports it.
+The CPU reference evaluator is a correctness implementation, not a new lifecycle manager or hidden fallback for a requested accelerator. A future GPU implementation belongs behind a NeuralNetworks-owned backend-neutral semantic contract and a concrete execution-provider adapter. Backend selection, capability reporting, transfers, completion, and fallback must be visible to FSM_Execution/host callers. Do not add a direct GPU SDK dependency until hardware/runtime reconnaissance supports it.
 
 ### Reuse policy
 
-Reuse existing Workshop contracts where their real interfaces fit. Use FSM_COS for composition, not as a neural scheduler. Use Foundry for execution lifecycle and scheduling, not as a replacement for neural graph semantics. Use MicroBundleDomain for capability identity, dependencies, providers, and lifecycle participation; do not make the neural core depend on the composition host. Use FSM_API only for actual state/context mechanics; do not encode every neural operation as an FSM state.
+Reuse existing Workshop contracts where their real interfaces fit. Use FSM_COS for composition, not as a neural scheduler. Use FSM_Execution for execution lifecycle and scheduling, not as a replacement for neural graph semantics. Use MicroBundleDomain for capability identity, dependencies, providers, and lifecycle participation; do not make the neural core depend on the composition host. Use FSM_API only for actual state/context mechanics; do not encode every neural operation as an FSM state.
 
 Keep FSM_Serialization, HeadlessAi, ProtocolAi, GrammarAi, Hermit, Gestures, Physics, and Visualize optional integrations at their respective boundaries. None is a mandatory dependency of the neural mathematical core. Hermit remains the owner of goals, permissions, planning, and action authority. Gestures and Physics are experiment interfaces; Visualize consumes execution evidence and must not recompute neural values.
 
