@@ -1,0 +1,57 @@
+name: NeuralNetworks Pages
+
+on:
+  push:
+    branches: [development]
+  pull_request:
+    branches: [development]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neural-networks-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Verify and assemble the NeuralNetworks learning site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out development
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # pinned commit SHA
+
+      - name: Verify the site and architecture documents
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s index.html
+          test -s README.md
+          test -s Documentation/Architecture/ARCHITECTURE.md
+          test -s Documentation/Architecture/MVP_CONTRACT_DECISIONS.md
+          test -s Documentation/Architecture/DATAWAREHOUSE_AND_BYTE_STATE_STORAGE.md
+          test -s Documentation/Architecture/WORKSHOP_RUNTIME_INTEGRATION.md
+          grep -F 'id="experiment"' index.html
+          grep -F 'Teaching visualization only' index.html
+          grep -F 'Awaiting owner acceptance' index.html
+          grep -F 'https://github.com/TrentBest/TheSingularityWorkshop.CiAi' .github/workflows/pages.yml
+          mkdir -p _site
+          cp index.html _site/index.html
+          cp -R Documentation _site/Documentation
+          touch _site/.nojekyll
+          test -s _site/index.html
+          test -s _site/Documentation/Architecture/ARCHITECTURE.md
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # pinned commit SHA
+        with:
+          path: _site
+
+  deploy:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    uses: TrentBest/TheSingularityWorkshop.CiAi/.github/workflows/deploy-pages.yml@5083c452b555d7645dd0c8ab01d76008026da436
