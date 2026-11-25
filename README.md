@@ -1,8 +1,16 @@
+<!-- The Singularity Workshop animated moniker -->
+<p align="center"><a href="https://github.com/TrentBest"><img src="https://raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.Visualize/development/docs/assets/moniker.svg" alt="The Singularity Workshop animated moniker" width="720" /></a></p>
+
 # TheSingularityWorkshop.FSM_NeuralNetworks
 
 [![Sith Policy](assets/sith-policy.svg)](https://github.com/TrentBest/TheSingularityWorkshop.FSM_NeuralNetworks/actions/workflows/sith-policy.yml)
 
 GPU-first neural computation and educational experimentation for The Singularity Workshop.
+
+## 01 — Explore NeuralNetworks
+
+**[Open the interactive NeuralNetworks learning experience](https://trentbest.github.io/TheSingularityWorkshop.FSM_NeuralNetworks/)** — experiment with the documented two-input/two-output Dense + ReLU fixture and inspect the architecture boundaries. The browser lesson is an educational calculation, not the library evaluator, a GPU backend, or a live Hermit integration.
+
 
 ## 1. Purpose and status
 
