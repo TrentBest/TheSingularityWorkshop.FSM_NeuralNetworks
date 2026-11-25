@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101522">
+  <meta name="description" content="Explore the Singularity Workshop's GPU-first neural computation architecture through a hand-checkable neural network lesson.">
+  <title>NeuralNetworks — The Singularity Workshop</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0b1020;--panel:#141c2d;--panel2:#1b2740;--ink:#edf3ff;--muted:#a9b8d0;--line:#30415e;--cyan:#61d9ef;--violet:#b6a0ff;--green:#7ce0b1;--amber:#ffd27b;--max:1120px}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(ellipse at 80% 0%,#1d3150 0,transparent 42%),var(--bg);color:var(--ink);font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}
+    a{color:var(--cyan);text-underline-offset:3px}a:hover{color:white}button,input{font:inherit}.wrap{width:min(var(--max),calc(100% - 40px));margin:auto}
+    .top{padding:28px 0 18px;border-bottom:1px solid #ffffff18}.moniker{display:block;width:min(540px,90%);height:auto;margin:0 auto 28px}
+    nav{display:flex;justify-content:center;gap:22px;flex-wrap:wrap;font-size:.92rem}.hero{padding:76px 0 64px;max-width:850px}.eyebrow{color:var(--cyan);font-weight:750;letter-spacing:.16em;text-transform:uppercase;font-size:.76rem}
+    h1{font-size:clamp(2.7rem,7vw,5.6rem);line-height:.99;letter-spacing:-.055em;margin:18px 0 24px}.lead{font-size:clamp(1.12rem,2vw,1.35rem);color:#c5d2e6;max-width:760px}
+    .hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}.link-button{display:inline-block;padding:11px 17px;border:1px solid var(--line);border-radius:10px;text-decoration:none;font-weight:700}.primary{background:var(--cyan);color:#07111d;border-color:var(--cyan)}.primary:hover{color:#07111d;background:#a4effa}
+    section{padding:58px 0;border-top:1px solid #ffffff16}.section-head{max-width:720px;margin-bottom:28px}h2{font-size:clamp(1.8rem,4vw,2.8rem);letter-spacing:-.035em;line-height:1.1;margin:10px 0 12px}h3{margin:0 0 10px;font-size:1.1rem}.muted{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.card{background:linear-gradient(145deg,var(--panel),#101827);border:1px solid var(--line);border-radius:16px;padding:22px}.card p{margin:0;color:var(--muted)}
+    .lesson{display:grid;grid-template-columns:minmax(250px,.8fr) minmax(0,1.2fr);gap:18px;align-items:stretch}.controls{display:grid;gap:14px}.field{display:grid;gap:5px}.field label{font-size:.9rem;color:var(--muted)}input{width:100%;padding:10px 12px;background:#0b1322;color:var(--ink);border:1px solid var(--line);border-radius:9px}
+    .result{display:grid;gap:12px}.equation{padding:13px 15px;background:#0b1322;border:1px solid var(--line);border-radius:10px;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere}
+    .output{font-size:2rem;font-weight:800;color:var(--green);letter-spacing:-.04em}.network{width:100%;height:auto;display:block}.network text{font:12px system-ui;fill:var(--ink)}.network .node{fill:#172842;stroke:var(--cyan);stroke-width:2}.network .out{stroke:var(--green)}.network .edge{stroke:var(--violet);stroke-width:2;opacity:.85}
+    .notice{border-left:3px solid var(--amber);padding:13px 16px;background:#ffd27b12;color:#e8d9b7;border-radius:0 10px 10px 0}
+    .roadmap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.roadmap .card{position:relative}.status{display:inline-block;font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;font-weight:800;color:var(--amber);margin-bottom:10px}.status.target{color:var(--violet)}
+    footer{padding:44px 0 54px;text-align:center;border-top:1px solid #ffffff18;color:var(--muted)}footer img{display:block;width:min(420px,80%);height:auto;margin:0 auto 15px;opacity:.9}
+    @media(max-width:760px){.grid{grid-template-columns:1fr}.lesson{grid-template-columns:1fr}.roadmap{grid-template-columns:1fr}.hero{padding:54px 0}.wrap{width:min(var(--max),calc(100% - 28px))}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap">
+      <a href="https://github.com/TrentBest" aria-label="The Singularity Workshop"><img class="moniker" src="https://raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.Visualize/development/docs/assets/moniker.svg" alt="The Singularity Workshop animated moniker"></a>
+      <nav aria-label="Main navigation">
+        <a href="#experiment">Experiment</a><a href="#architecture">Architecture</a><a href="#roadmap">Roadmap</a><a href="https://github.com/TrentBest/TheSingularityWorkshop.FSM_NeuralNetworks">Source</a>
+      </nav>
+    </div>
+  </header>
+  <main class="wrap">
+    <div class="hero">
+      <div class="eyebrow">A living Workshop lesson</div>
+      <h1>Neural networks,<br><span style="color:var(--cyan)">made inspectable.</span></h1>
+      <p class="lead">Explore how a small neural computation transforms inputs into outputs. Follow every weight, bias and activation—then see the architecture being built to take that same clarity toward GPU-backed computation.</p>
+      <div class="hero-actions"><a class="link-button primary" href="#experiment">Run the lesson</a><a class="link-button" href="https://github.com/TrentBest/TheSingularityWorkshop.FSM_NeuralNetworks/tree/development/Documentation/Architecture">Read the architecture</a></div>
+    </div>
+    <section id="experiment">
+      <div class="section-head"><div class="eyebrow">01 / Interactive lesson</div><h2>From two inputs to two outputs</h2><p class="muted">Change the input values. The fixed weights and biases below define a tiny Dense layer followed by ReLU. Every intermediate calculation is shown.</p></div>
+      <div class="lesson">
+        <div class="card controls">
+          <h3>Input tensor · x</h3>
+          <div class="field"><label for="x1">Input 1</label><input id="x1" type="number" step="any" value="2"></div>
+          <div class="field"><label for="x2">Input 2</label><input id="x2" type="number" step="any" value="1"></div>
+          <div class="equation">W = [[ 2, 1 ], [ -1, 3 ]]<br>b = [ -1, 2 ]</div>
+          <p class="muted">The parameters are fixed for this lesson. Only the input tensor changes.</p>
+          <div id="inputStatus" class="muted" role="status" aria-live="polite">Ready to calculate.</div>
+        </div>
+        <div class="card result">
+          <h3>Computation path</h3>
+          <svg class="network" viewBox="0 0 520 180" role="img" aria-label="Two input nodes connect to two Dense output nodes, followed by ReLU outputs">
+            <g class="edge"><path d="M75 55 L250 55 M75 55 L250 125 M75 125 L250 55 M75 125 L250 125 M270 55 L430 55 M270 125 L430 125"/></g>
+            <circle class="node" cx="75" cy="55" r="23"/><circle class="node" cx="75" cy="125" r="23"/>
+            <circle class="node" cx="250" cy="55" r="23"/><circle class="node" cx="250" cy="125" r="23"/>
+            <circle class="node out" cx="430" cy="55" r="23"/><circle class="node out" cx="430" cy="125" r="23"/>
+            <g text-anchor="middle"><text x="75" y="59">x₁</text><text x="75" y="129">x₂</text><text x="250" y="59">z₁</text><text x="250" y="129">z₂</text><text x="430" y="59">y₁</text><text x="430" y="129">y₂</text><text x="160" y="22">Dense</text><text x="340" y="22">ReLU</text></g>
+          </svg>
+          <div class="equation" id="dense1">z₁ = (2 × 2) + (1 × 1) − 1 = 4</div>
+          <div class="equation" id="dense2">z₂ = (2 × −1) + (1 × 3) + 2 = 3</div>
+          <div><div class="muted">ReLU output · y = max(0, z)</div><div class="output" id="output">[ 4, 3 ]</div></div>
+        </div>
+      </div>
+      <p class="notice" style="margin-top:18px">Teaching visualization only: this page calculates the documented fixture in browser JavaScript. It is not the NeuralNetworks library evaluator, a GPU backend, or a live Hermit integration.</p>
+    </section>
+    <section id="architecture">
+      <div class="section-head"><div class="eyebrow">02 / The boundaries</div><h2>One model. Clear responsibilities.</h2><p class="muted">The Workshop keeps mathematical meaning separate from runtime composition, execution authority, storage and presentation.</p></div>
+      <div class="grid">
+        <article class="card"><h3>NeuralNetworks</h3><p>Owns model topology, tensors, operations, numerical semantics, bounded evaluation and execution evidence.</p></article>
+        <article class="card"><h3>DataWarehouse</h3><p>Owns storage allocation, shelves, handles, liveness, dirty tracking and storage lifetime. NeuralNetworks owns the meaning of its data.</p></article>
+        <article class="card"><h3>FSM_COS / FSM_Execution</h3><p>FSM_COS composes capabilities. FSM_Execution owns execution lifecycle and scheduling. Neither replaces neural graph semantics.</p></article>
+        <article class="card"><h3>Hermit</h3><p>Owns goals, observations, planning, policy and permissions. It may request bounded computation; it does not delegate authority to model output.</p></article>
+        <article class="card"><h3>GPU backend</h3><p>Will implement declared backend-neutral semantics. Device, precision, transfers, synchronization and fallback must remain observable.</p></article>
+        <article class="card"><h3>Visualize</h3><p>Will present actual execution evidence and traces. It must not recompute neural values to create a convincing picture.</p></article>
+      </div>
+    </section>
+    <section id="roadmap">
+      <div class="section-head"><div class="eyebrow">03 / Honest progress</div><h2>Build the proof, then scale it.</h2><p class="muted">The architecture is deliberately GPU-first, not GPU-only. Correctness and observable evidence come before acceleration claims.</p></div>
+      <div class="roadmap">
+        <article class="card"><div class="status">Documented</div><h3>Model and execution contracts</h3><p>Proposed DAG, tensor, numerical, bounded-work and trace contracts, with a hand-checkable acceptance fixture.</p></article>
+        <article class="card"><div class="status">Awaiting owner acceptance</div><h3>First inference implementation</h3><p>The MVP decisions remain proposed. No CPU inference evaluator is claimed or started; its explicit acceptance gate remains in place.</p></article>
+        <article class="card"><div class="status target">Future / hardware-dependent</div><h3>Accelerated backend</h3><p>Select a GPU API only after target hardware and runtime reconnaissance. No silent CPU fallback and no unmeasured acceleration claims.</p></article>
+        <article class="card"><div class="status target">Future experiment</div><h3>Hermit in a living world</h3><p>Hermit can eventually request bounded inference, inspect actual traces and learn from measured outcomes while host policy remains authoritative.</p></article>
+      </div>
+      <div class="hero-actions"><a class="link-button" href="Documentation/Architecture/ARCHITECTURE.md">Architecture</a><a class="link-button" href="Documentation/Architecture/MVP_CONTRACT_DECISIONS.md">MVP decisions</a><a class="link-button" href="Documentation/Architecture/DATAWAREHOUSE_AND_BYTE_STATE_STORAGE.md">DataWarehouse contract</a><a class="link-button" href="Documentation/Architecture/WORKSHOP_RUNTIME_INTEGRATION.md">Runtime integration</a></div>
+    </section>
+  </main>
+  <footer><div class="wrap"><img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/TheSingularityWorkshop.png" alt="The Singularity Workshop"><p>Part of The Singularity Workshop · <a href="https://github.com/TrentBest/TheSingularityWorkshop.FSM_NeuralNetworks">Source and development</a></p><p>If a picture is worth a thousand words, what is a living picture worth?</p></div></footer>
+  <script>
+    const x1=document.querySelector("#x1"),x2=document.querySelector("#x2"),status=document.querySelector("#inputStatus");
+    const fmt=n=>Number.isInteger(n)?String(n):Number(n.toPrecision(7)).toString();
+    function calculate(){
+      const a=Number(x1.value),b=Number(x2.value);
+      if(x1.value.trim()===""||x2.value.trim()===""||!Number.isFinite(a)||!Number.isFinite(b)){
+        status.textContent="Enter two finite numbers to calculate.";document.querySelector("#output").textContent="—";return;
+      }
+      const z1=2*a+b-1,z2=-a+3*b+2,y1=Math.max(0,z1),y2=Math.max(0,z2);
+      if(![z1,z2,y1,y2].every(Number.isFinite)){status.textContent="The result is outside the finite number range.";document.querySelector("#output").textContent="—";return;}
+      document.querySelector("#dense1").textContent=`z₁ = (2 × ${fmt(a)}) + (1 × ${fmt(b)}) − 1 = ${fmt(z1)}`;
+      document.querySelector("#dense2").textContent=`z₂ = (${fmt(a)} × −1) + (${fmt(b)} × 3) + 2 = ${fmt(z2)}`;
+      document.querySelector("#output").textContent=`[ ${fmt(y1)}, ${fmt(y2)} ]`;
+      status.textContent="Calculated from the fixed Dense parameters.";
+    }
+    x1.addEventListener("input",calculate);x2.addEventListener("input",calculate);
+  </script>
+</body>
+</html>
