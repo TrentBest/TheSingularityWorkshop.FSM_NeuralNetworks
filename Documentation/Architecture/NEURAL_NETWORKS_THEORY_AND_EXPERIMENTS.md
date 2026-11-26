@@ -1,6 +1,6 @@
 # Neural Networks — Theory, Models, and Experiments
 
-**Status:** Learning and design guide for the accepted NeuralNetworks MVP. The browser lesson remains an educational calculator; a first .NET 10 CPU reference evaluator now exists under `src/FsmNeuralNetworks`. Its build/test verification is pending the dedicated GitHub Actions workflow.
+**Status:** Learning and design guide for the accepted NeuralNetworks MVP. The browser lesson remains an educational calculator; the .NET 10 CPU reference evaluator under `src/FsmNeuralNetworks` has passed exact-commit CI (11 tests at the verified evaluator commit). A deterministic planar-reach conformance workload has since been added; its own CI result is pending.
 
 ## 1. The central idea: a parameterized function
 
@@ -151,7 +151,7 @@ Performance claims must separate model math from orchestration, validation, trac
 
 ## 10. Status and implementation boundary
 
-The browser lesson is an educational calculator for one fixed Dense + ReLU fixture. The first .NET 10 CPU reference evaluator has now been added for the accepted bounded stateless DAG profile, with initial tests and a dedicated CI workflow. Treat it as an initial implementation slice until exact-commit CI evidence is green. GPU acceleration, training, recurrent execution, and live Hermit integration are not implemented claims.
+The browser lesson is an educational calculator for one fixed Dense + ReLU fixture. The first .NET 10 CPU reference evaluator has passed its dedicated exact-commit CI build and 11 tests. A deterministic planar-reach workload now exercises that same evaluator with two joint-error inputs and two kinematic target proposals. GPU acceleration, training, recurrent execution, and live Hermit integration are not implemented claims; the new workload remains pending its own exact-commit CI result.
 
 - [Architecture](ARCHITECTURE.md)
 - [MVP contract decisions](MVP_CONTRACT_DECISIONS.md)
@@ -200,7 +200,7 @@ A sensible first learned task is a bounded reach-and-touch experiment on a small
 
 ### Workload implications for the evaluator
 
-The embodied workload introduces repeated, time-stepped inference and potentially many joint/actuator outputs. It does not justify changing the logical tensor model or weakening the current CPU reference contract. It does mean the evaluator and later backends must be measured against both the tiny educational fixture and representative batched control workloads.
+The first embodied conformance fixture is intentionally small: a two-link planar reach proposal graph receives consumer-derived shoulder/elbow angle errors and emits two kinematic target proposals. The test repeats identical input to prove stateless determinism, inspects the evaluator trace, and demonstrates consumer-side clamping to a maximum target step. The clamp is outside NeuralNetworks; the graph does not know joint limits and does not claim torque, force, actuator activation, contact, or physical success. This workload exercises the same evaluator as the educational fixture. Later work should add a larger batched workload only when its observation/action semantics and cost model are explicit. It does not justify changing the logical tensor model or weakening the CPU reference contract.
 
 Keep these costs separate in benchmarks: graph validation, inference arithmetic, allocations, trace capture, controller/FSM orchestration, sensor adaptation, and any future device transfer. Recurrent or stateful neural execution remains a separate contract; joint FSM state must not be smuggled into the current acyclic graph evaluator.
 
