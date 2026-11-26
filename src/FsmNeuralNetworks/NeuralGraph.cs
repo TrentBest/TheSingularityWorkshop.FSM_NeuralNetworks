@@ -145,12 +145,13 @@ public sealed record EvaluationBudget(
     int MaxNodes,
     int MaxIntermediateElements,
     int MaxTraceRecords,
+    int MaxTraceElements,
     TimeSpan MaxDuration)
 {
     public void Validate()
     {
         if (MaxInputElements <= 0 || MaxNodes <= 0 || MaxIntermediateElements <= 0 ||
-            MaxTraceRecords < 0 || MaxDuration <= TimeSpan.Zero || MaxDuration == Timeout.InfiniteTimeSpan)
+            MaxTraceRecords < 0 || MaxTraceElements < 0 || MaxDuration <= TimeSpan.Zero || MaxDuration == Timeout.InfiniteTimeSpan)
             throw new ArgumentOutOfRangeException(nameof(EvaluationBudget), "Every budget dimension must be finite and positive (trace may be zero).");
     }
 }
@@ -163,7 +164,7 @@ public sealed class EvaluationResult
     {
         ModelVersion = modelVersion;
         Outputs = new ReadOnlyDictionary<string, IReadOnlyList<double>>(
-            outputs.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<double>)Array.AsReadOnly((double[])kv.Value.Clone()), StringComparer.Ordinal));
+            outputs.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<double>)Array.AsReadOnly(kv.Value), StringComparer.Ordinal));
         Trace = trace;
         TraceTruncated = traceTruncated;
     }
@@ -214,12 +215,16 @@ public sealed class CpuReferenceEvaluator
         var trace = new List<NodeTrace>();
         var retainedElements = 0;
         var traceTruncated = false;
+        var traceElements = 0;
         var incoming = graph.Incoming;
 
         foreach (var node in graph.ExecutionOrder)
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (watch.Elapsed > budget.MaxDuration) throw new NeuralBudgetExceededException("Execution time budget exceeded.");
+
+            if (retainedElements + node.Width > budget.MaxIntermediateElements)
+                throw new NeuralBudgetExceededException("Intermediate/result element budget exceeded before allocation.");
 
             double[] result;
             switch (node)
@@ -238,6 +243,12 @@ public sealed class CpuReferenceEvaluator
                         for (var input = 0; input < dense.InputWidth; input++)
                         {
                             sum += source[input] * dense.Weight(output, input);
+                            if ((input & 1023) == 0)
+                            {
+                                cancellationToken.ThrowIfCancellationRequested();
+                                if (watch.Elapsed > budget.MaxDuration)
+                                    throw new NeuralBudgetExceededException("Execution time budget exceeded.");
+                            }
                             if (!double.IsFinite(sum))
                                 throw new NeuralNumericalFailureException($"Non-finite accumulation at node '{dense.Id}', output {output}.");
                         }
@@ -268,8 +279,11 @@ public sealed class CpuReferenceEvaluator
 
             if (captureTrace)
             {
-                if (trace.Count < budget.MaxTraceRecords)
+                if (trace.Count < budget.MaxTraceRecords && traceElements + result.Length <= budget.MaxTraceElements)
+                {
                     trace.Add(new NodeTrace(graph.ModelVersion, node.Id, node.OutputPort, node.Width, Array.AsReadOnly((double[])result.Clone())));
+                    traceElements += result.Length;
+                }
                 else
                     traceTruncated = true;
             }
