@@ -1,4 +1,5 @@
 using FsmNeuralNetworks;
+using Xunit;
 
 namespace FsmNeuralNetworks.Tests;
 
