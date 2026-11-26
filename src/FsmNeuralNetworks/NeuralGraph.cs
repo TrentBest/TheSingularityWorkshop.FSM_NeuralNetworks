@@ -202,13 +202,15 @@ public sealed class CpuReferenceEvaluator
         long parameterElements = 0;
         foreach (var node in graph.Nodes)
         {
-            workOperations += node switch
+            var nodeWork = node switch
             {
-                DenseNode dense => (long)dense.InputWidth * dense.Width,
-                _ => node.Width
+                DenseNode dense => checked((long)dense.InputWidth * dense.Width + dense.Width),
+                ReluNode relu => relu.Width,
+                _ => 0L
             };
+            workOperations = checked(workOperations + nodeWork);
             if (node is DenseNode parameterized)
-                parameterElements += (long)parameterized.InputWidth * parameterized.Width + parameterized.Width;
+                parameterElements = checked(parameterElements + (long)parameterized.InputWidth * parameterized.Width + parameterized.Width);
         }
         if (workOperations > budget.MaxWorkOperations)
             throw new NeuralBudgetExceededException("Graph work-operation budget exceeded.");
@@ -237,6 +239,7 @@ public sealed class CpuReferenceEvaluator
         var traceTruncated = false;
         long traceElements = 0;
         var incoming = graph.Incoming;
+        var nodesWithOutgoingEdges = graph.Edges.Select(e => e.SourceNodeId).ToHashSet(StringComparer.Ordinal);
 
         foreach (var node in graph.ExecutionOrder)
         {
@@ -283,7 +286,16 @@ public sealed class CpuReferenceEvaluator
                 {
                     var source = valuesByNode[incoming[node.Id].SourceNodeId];
                     result = new double[source.Length];
-                    for (var i = 0; i < source.Length; i++) result[i] = Math.Max(0d, source[i]);
+                    for (var i = 0; i < source.Length; i++)
+                    {
+                        if ((i & 1023) == 0)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+                            if (watch.Elapsed > budget.MaxDuration)
+                                throw new NeuralBudgetExceededException("Execution time budget exceeded.");
+                        }
+                        result[i] = Math.Max(0d, source[i]);
+                    }
                     break;
                 }
                 default:
@@ -308,7 +320,7 @@ public sealed class CpuReferenceEvaluator
                     traceTruncated = true;
             }
 
-            if (!graph.Edges.Any(e => e.SourceNodeId == node.Id))
+            if (!nodesWithOutgoingEdges.Contains(node.Id))
                 outputs.Add($"{node.Id}.{node.OutputPort}", result);
         }
 
