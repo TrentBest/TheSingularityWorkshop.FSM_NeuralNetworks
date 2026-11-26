@@ -143,6 +143,8 @@ public sealed class NeuralGraph
 public sealed record EvaluationBudget(
     int MaxInputElements,
     int MaxNodes,
+    long MaxWorkOperations,
+    long MaxParameterElements,
     int MaxIntermediateElements,
     int MaxTraceRecords,
     int MaxTraceElements,
@@ -150,8 +152,9 @@ public sealed record EvaluationBudget(
 {
     public void Validate()
     {
-        if (MaxInputElements <= 0 || MaxNodes <= 0 || MaxIntermediateElements <= 0 ||
-            MaxTraceRecords < 0 || MaxTraceElements < 0 || MaxDuration <= TimeSpan.Zero || MaxDuration == Timeout.InfiniteTimeSpan)
+        if (MaxInputElements <= 0 || MaxNodes <= 0 || MaxWorkOperations <= 0 || MaxParameterElements <= 0 ||
+            MaxIntermediateElements <= 0 || MaxTraceRecords < 0 || MaxTraceElements < 0 ||
+            MaxDuration <= TimeSpan.Zero || MaxDuration == Timeout.InfiniteTimeSpan)
             throw new ArgumentOutOfRangeException(nameof(EvaluationBudget), "Every budget dimension must be finite and positive (trace may be zero).");
     }
 }
@@ -195,8 +198,25 @@ public sealed class CpuReferenceEvaluator
         budget.Validate();
         if (graph.Nodes.Count > budget.MaxNodes) throw new NeuralBudgetExceededException("Graph node budget exceeded.");
 
+        long workOperations = 0;
+        long parameterElements = 0;
+        foreach (var node in graph.Nodes)
+        {
+            workOperations += node switch
+            {
+                DenseNode dense => (long)dense.InputWidth * dense.Width,
+                _ => node.Width
+            };
+            if (node is DenseNode parameterized)
+                parameterElements += (long)parameterized.InputWidth * parameterized.Width + parameterized.Width;
+        }
+        if (workOperations > budget.MaxWorkOperations)
+            throw new NeuralBudgetExceededException("Graph work-operation budget exceeded.");
+        if (parameterElements > budget.MaxParameterElements)
+            throw new NeuralBudgetExceededException("Model parameter budget exceeded.");
+
         var inputNodes = graph.Nodes.OfType<InputNode>().ToArray();
-        var inputCount = 0;
+        long inputCount = 0;
         foreach (var node in inputNodes)
         {
             if (!inputs.TryGetValue(node.Id, out var values) || values.Count != node.Width)
@@ -213,9 +233,9 @@ public sealed class CpuReferenceEvaluator
         var valuesByNode = new Dictionary<string, double[]>(StringComparer.Ordinal);
         var outputs = new Dictionary<string, double[]>(StringComparer.Ordinal);
         var trace = new List<NodeTrace>();
-        var retainedElements = 0;
+        long retainedElements = 0;
         var traceTruncated = false;
-        var traceElements = 0;
+        long traceElements = 0;
         var incoming = graph.Incoming;
 
         foreach (var node in graph.ExecutionOrder)
