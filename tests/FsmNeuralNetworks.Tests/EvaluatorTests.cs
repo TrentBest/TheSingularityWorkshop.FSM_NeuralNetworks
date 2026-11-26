@@ -99,7 +99,8 @@ public sealed class EvaluatorTests
     [Fact]
     public void RejectsMissingFiniteBudget()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() => Budget() with { MaxDuration = Timeout.InfiniteTimeSpan }.Validate());
+        var invalid = Budget() with { MaxDuration = Timeout.InfiniteTimeSpan };
+        Assert.Throws<ArgumentOutOfRangeException>(invalid.Validate);
     }
 
     [Fact]
