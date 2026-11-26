@@ -5,7 +5,7 @@ namespace FsmNeuralNetworks.Tests;
 
 public sealed class EvaluatorTests
 {
-    private static EvaluationBudget Budget(int trace = 8, int traceElements = 32) => new(16, 16, 64, trace, traceElements, TimeSpan.FromSeconds(2));
+    private static EvaluationBudget Budget(int trace = 8, int traceElements = 32) => new(16, 16, 1024, 256, 64, trace, traceElements, TimeSpan.FromSeconds(2));
 
     private static NeuralGraph Fixture() => new(
         "fixture-v1",
@@ -55,12 +55,24 @@ public sealed class EvaluatorTests
     }
 
     [Fact]
+    public void RejectsGraphWorkBudgetOverrun()
+    {
+        var graph = Fixture();
+        var limited = Budget() with { MaxWorkOperations = 3 };
+
+        Assert.Throws<NeuralBudgetExceededException>(() => new CpuReferenceEvaluator().Evaluate(
+            graph,
+            new Dictionary<string, IReadOnlyList<double>> { ["input-0"] = new double[] { 2, 1 } },
+            limited));
+    }
+
+    [Fact]
     public void RejectsInputBudgetOverrun()
     {
         Assert.Throws<NeuralBudgetExceededException>(() => new CpuReferenceEvaluator().Evaluate(
             Fixture(),
             new Dictionary<string, IReadOnlyList<double>> { ["input-0"] = new double[] { 2, 1 } },
-            new EvaluationBudget(1, 16, 64, 8, 32, TimeSpan.FromSeconds(2))));
+            new EvaluationBudget(1, 16, 1024, 256, 64, 8, 32, TimeSpan.FromSeconds(2))));
     }
 
     [Fact]
@@ -70,7 +82,6 @@ public sealed class EvaluatorTests
             "cycle",
             [new InputNode("input", 1), new ReluNode("a", 1), new ReluNode("b", 1)],
             [
-                new NeuralEdge("input", "values", "a", "values"),
                 new NeuralEdge("a", "values", "b", "values"),
                 new NeuralEdge("b", "values", "a", "values")
             ]));
