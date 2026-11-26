@@ -19,7 +19,7 @@ NeuralNetworks owns backend-neutral neural model semantics and bounded computati
 The design is intentionally **GPU-first, not GPU-only**. The CPU reference path establishes correctness and portability; it is not evidence of GPU acceleration and must never silently replace a requested accelerator.
 
 
-**Current status:** architecture and MVP contracts are documented on `development`. The first CPU inference implementation has not been started. The MVP contract is ready for explicit owner acceptance or amendment. No GPU backend has been selected, and no NuGet publication is authorized.
+**Current status:** the owner has accepted the MVP contract on `development`. The first CPU inference implementation is now authorized within that scope: bounded stateless DAG, binary64 CPU reference, immutable model versions, finite-value validation, bounded optional execution traces, and the dense/ReLU acceptance fixture. The embodied motor-control scenario is a second conformance/benchmark workload on the same evaluator. Recurrent/stateful execution remains deferred behind a separate contract. No GPU backend has been selected, and no NuGet publication is authorized.
 
 ## 2. Architecture at a glance
 
@@ -83,7 +83,7 @@ The neural graph remains internal to NeuralNetworks and is evaluated as one boun
 - Do not add training, recurrent execution, a model zoo, or broad framework dependencies before the inference foundation is proven.
 - Do not publish a NuGet package without explicit authorization.
 
-**Implementation gate:** the owner must explicitly accept or amend [the MVP contract](Documentation/Architecture/MVP_CONTRACT_DECISIONS.md) before the first CPU evaluator slice begins.
+**Implementation gate:** satisfied for the scoped CPU evaluator by explicit owner acceptance. See [the accepted MVP contract](Documentation/Architecture/MVP_CONTRACT_DECISIONS.md).
 
 ---
 
