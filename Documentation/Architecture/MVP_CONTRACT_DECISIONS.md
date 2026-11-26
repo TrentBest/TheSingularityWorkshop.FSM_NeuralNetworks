@@ -1,12 +1,12 @@
 # NeuralNetworks MVP Contract Decisions
 
-**Status:** Proposed decisions for review  
+**Status:** Accepted for implementation  
 **Applies to:** Initial CPU inference slice and later backend conformance  
 **Parent architecture:** [ARCHITECTURE.md](./ARCHITECTURE.md)  
 **Branch policy:** Active work on development only; preserve master  
 **Publication:** No NuGet publication is authorized.
 
-This record responds to the seven contract gaps raised in the architecture review. It distinguishes decisions appropriate for the first educational inference slice from choices that require target-hardware or workload evidence. These are proposed contracts, not claims of implemented behavior.
+This record responds to the seven contract gaps raised in the architecture review. The user has accepted the MVP direction: retain the bounded stateless DAG evaluator and CPU reference semantics; add a representative embodied motor-control workload as a second conformance/benchmark target; and keep recurrent/stateful execution behind a separately specified contract. Acceptance authorizes implementation of the scoped evaluator, not NuGet publication, release, deployment, or changes to `master`.
 
 ## Decision summary
 
@@ -187,6 +187,27 @@ A Foundry host may derive and pass an inference budget from its own run policy, 
 Any non-finite value detected during multiplication/accumulation, bias addition, or activation is a numerical execution failure (category: NumericalFailure). The evaluator must not return a successful partial result. It may return bounded diagnostic/trace evidence that identifies the failing node/port and model version, subject to the trace budget. Invalid non-finite inputs/parameters remain validation failures; non-finite values generated during evaluation are execution failures.
 
 
+## 9. Embodied motor-control conformance workload
+
+**Disposition: Accepted as a second workload target; implementation follows the core evaluator.**
+
+The motor-control workload exercises the same stateless DAG evaluator. It does not change the MVP graph semantics or make the neural core depend on Hermit, Gestures, Physics, Unity, or Renderer.
+
+The workload should model one bounded control observation and produce a bounded vector of actuator proposals:
+
+- Inputs are a fixed-shape numeric observation assembled by the consuming experiment from stable joint/actuator identifiers, joint state, local supervisor mode, target/achieved movement error, and other explicitly selected sensor values.
+- The graph is an ordinary acyclic feed-forward model using only operations supported by the MVP profile.
+- Outputs are finite numeric proposals interpreted by the consumer as bounded activation/effort/trajectory requests. They are not direct physical state mutations, permissions, or authoritative joint commands.
+- The consumer applies its own safety bounds and local FSM/supervisor rules; Physics or the relevant physical simulator remains authoritative for outcomes.
+- A deterministic, hand-checkable small fixture is required first. A representative wider/batched workload may then be added for performance measurement.
+- The workload must report graph size, input/output dimensions, batch size, evaluation count, trace mode, and budget settings so benchmark results are reproducible.
+
+The motor-control target is a second conformance and benchmark workload, not a second evaluator implementation. The original dense/ReLU acceptance fixture remains the small numerical correctness oracle. Benchmark arithmetic separately from validation, allocations, tracing, orchestration, observation adaptation, and any device transfer.
+
+### Recurrent and stateful execution boundary
+
+Recurrent networks, feedback edges, hidden state, temporal windows, and state carry-over are **not** part of this accepted stateless DAG implementation. They require a separate contract covering at least state ownership and lifetime, sequence/batch semantics, reset behavior, deterministic replay, concurrency/isolation, bounded memory/work, cancellation, and trace representation. Do not smuggle recurrence into the DAG evaluator or treat an ordinary input/output loop in a consumer as an internal recurrent graph.
+
 ## Deferred evidence items
 
 These are intentionally not selected by this record:
@@ -201,6 +222,6 @@ Each deferred item should be resolved with alternatives, evidence, trade-offs, a
 
 ## Gate to the first implementation
 
-The first CPU inference slice may begin after review accepts or amends these proposed contracts. It should implement only the DAG subset, logical tensor boundary, immutable model-version behavior, finite-value validation, bounded optional trace, and the acceptance fixture. It should not introduce a GPU dependency, training framework, broad model zoo, or consumer-specific authority.
+**Gate satisfied:** the user accepted the MVP direction. Implementation may begin on `development`. The first CPU inference slice should implement only the DAG subset, logical tensor boundary, immutable model-version behavior, finite-value validation, bounded optional trace, and the acceptance fixture. The embodied motor-control workload follows as a second conformance/benchmark target on the same evaluator. It should not introduce a GPU dependency, training framework, broad model zoo, or consumer-specific authority.
 
 No NuGet publication, master change, or additional branch is authorized by this record.
