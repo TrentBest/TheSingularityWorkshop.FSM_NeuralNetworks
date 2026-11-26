@@ -158,3 +158,50 @@ The browser lesson is an educational calculator for one fixed Dense + ReLU fixtu
 - [FSM_API 2.0 integer-backing integration](FSM_API_2.0_INTEGER_BACKING_INTEGRATION.md)
 - [DataWarehouse and byte-state storage](DATAWAREHOUSE_AND_BYTE_STATE_STORAGE.md)
 - [Workshop runtime integration](WORKSHOP_RUNTIME_INTEGRATION.md)
+
+
+## 15. Embodied control: intention, coordination, and joint-level actuation
+
+Hermit's embodied controller is a hierarchical control problem, not a requirement to put an FSM around every neuron or to make one neural network directly animate every joint.
+
+The intended hierarchy is:
+
+1. **Intent / goal:** Hermit wants to reach a location, touch an object, grasp it, walk, or maintain balance.
+2. **Coordination:** a higher-level controller turns that intent into coordinated movement goals—such as a reach trajectory, posture, gait phase, or balance correction.
+3. **Joint supervision:** each supported joint may have a small, bounded FSM that manages its local control mode, legal range, command limits, and transitions.
+4. **Actuation:** the learned controller proposes muscle-like activation or target commands. Where a joint has opposing actuators, the two activation channels can represent the opposing sides of the joint.
+5. **Physical outcome:** Physics computes movement, contact, load, collision, and failure. The next observation closes the loop.
+
+The FSMs are not a substitute for numerical computation. They supervise local control state and enforce discrete constraints; the neural evaluator performs its declared numerical operations. Do not create one FSM state per neuron or per multiply-add. Do not assume that every joint must immediately have an independently learned policy.
+
+### Observation and action boundary
+
+A future embodied-control adapter should make the following evidence explicit, where the owning subsystem actually supplies it:
+
+- stable rig, joint, and actuator identities;
+- joint position, legal range, and velocity;
+- current controller mode and accepted command;
+- actuator activation/effort and configured limits;
+- end-effector target versus achieved pose;
+- contact, load, balance, and collision evidence from authoritative providers;
+- task intent, coordination target, and timestep/episode identity.
+
+The learned policy may propose bounded activations or target trajectories. Joint supervisors validate and constrain those proposals. Physics remains authoritative for the result. Requested, accepted, and achieved values must remain separately inspectable.
+
+Muscles contract to generate force; tendons transmit that force to the skeleton; ligaments stabilize and constrain joints. A software actuator model may simplify these mechanics, but documentation and telemetry should not conflate their biological roles.
+
+### Rig strategy and first experiment
+
+The intended reference embodiment is the fully articulated Unity Input Sample armature, including finger joints and excluding toe joints. Treat this as a rig-source and compatibility target to audit—not as evidence that the rig has already been imported or that every joint is currently supported.
+
+Gestures owns reusable armature, joint, kinematic-procedure, and controller observation/action contracts. Its current teachable-armature issue (#32) is deliberately a two-link planar reference slice. Keep that fixture small and deterministic; track full-rig mapping as a separate expansion so the initial contract is not silently overgeneralized.
+
+A sensible first learned task is a bounded reach-and-touch experiment on a small subset of the rig. Walking, balance, and whole-body coordination should follow only after the observation/action loop, joint limits, actuator semantics, reset behavior, and physical feedback are measurable.
+
+### Workload implications for the evaluator
+
+The embodied workload introduces repeated, time-stepped inference and potentially many joint/actuator outputs. It does not justify changing the logical tensor model or weakening the current CPU reference contract. It does mean the evaluator and later backends must be measured against both the tiny educational fixture and representative batched control workloads.
+
+Keep these costs separate in benchmarks: graph validation, inference arithmetic, allocations, trace capture, controller/FSM orchestration, sensor adaptation, and any future device transfer. Recurrent or stateful neural execution remains a separate contract; joint FSM state must not be smuggled into the current acyclic graph evaluator.
+
+**Status:** architecture direction only. No live Hermit controller, imported Unity rig, per-joint FSM array, training loop, or GPU motor-control execution is claimed by this document.
