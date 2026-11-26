@@ -19,7 +19,7 @@ NeuralNetworks owns backend-neutral neural model semantics and bounded computati
 The design is intentionally **GPU-first, not GPU-only**. The CPU reference path establishes correctness and portability; it is not evidence of GPU acceleration and must never silently replace a requested accelerator.
 
 
-**Current status:** the owner has accepted the MVP contract on `development`. The first CPU inference implementation is now authorized within that scope: bounded stateless DAG, binary64 CPU reference, immutable model versions, finite-value validation, bounded optional execution traces, and the dense/ReLU acceptance fixture. The embodied motor-control scenario is a second conformance/benchmark workload on the same evaluator. Recurrent/stateful execution remains deferred behind a separate contract. No GPU backend has been selected, and no NuGet publication is authorized.
+**Current status:** the owner has accepted the MVP contract on `development`. The first implementation slice now exists as a .NET 10 library and test project: bounded stateless DAG, binary64 CPU reference, immutable parameter snapshots, finite-value validation, explicit input/work/trace/time budgets, and opt-in traces from the evaluated graph. The dense/ReLU `[4, 3]` fixture and initial validation/budget tests are included. This code has been committed but is **not yet marked CI-verified**; the dedicated [NeuralNetworks .NET workflow](.github/workflows/neuralnetworks-dotnet.yml) is the verification gate. The embodied motor-control scenario remains the second conformance/benchmark workload on the same evaluator. Recurrent/stateful execution remains deferred behind a separate contract. No GPU backend has been selected, and no NuGet publication is authorized.
 
 ## 2. Architecture at a glance
 
@@ -44,7 +44,16 @@ ReLU([4, 3])   = [4, 3]
 
 The expected output is `[4, 3]`. This fixture is intended to become the shared CPU, trace, and future backend-conformance example.
 
-## 3. Documentation
+## 3. Source and verification
+
+- Solution: [`FsmNeuralNetworks.sln`](FsmNeuralNetworks.sln)
+- CPU reference evaluator: [`src/FsmNeuralNetworks/NeuralGraph.cs`](src/FsmNeuralNetworks/NeuralGraph.cs)
+- Acceptance and boundary tests: [`tests/FsmNeuralNetworks.Tests/EvaluatorTests.cs`](tests/FsmNeuralNetworks.Tests/EvaluatorTests.cs)
+- CI: [NeuralNetworks .NET workflow](.github/workflows/neuralnetworks-dotnet.yml)
+
+The current implementation is an initial reference slice, not yet a GPU backend, training engine, recurrent runtime, or Hermit controller. Do not treat a commit as proof of a passing build; use the exact-commit workflow result.
+
+## 4. Documentation
 
 Start with the [Neural Networks theory and experiments guide](Documentation/Architecture/NEURAL_NETWORKS_THEORY_AND_EXPERIMENTS.md) for the mathematics, graph model, tensor semantics, inference-versus-training boundary, and planned hands-on experiments.
 
@@ -58,7 +67,7 @@ Start with the [Neural Networks theory and experiments guide](Documentation/Arch
 
 These documents distinguish accepted architectural direction, proposed implementation details, and capabilities that do not yet exist. In particular, the DataWarehouse GPU resource/region contract and the FSM_Execution RuntimeAssembly execution handoff are not claimed to be implemented.
 
-## 4. Workshop boundaries
+## 5. Workshop boundaries
 
 | System | Owns |
 |---|---|
@@ -73,7 +82,7 @@ These documents distinguish accepted architectural direction, proposed implement
 
 The neural graph remains internal to NeuralNetworks and is evaluated as one bounded capability. It is not automatically expanded into FSM states or FSM_Execution workflow steps.
 
-## 5. Development and guardrails
+## 6. Development and guardrails
 
 - Active work belongs on `development`; preserve `master` as the released/NuGet-aligned state.
 - Keep exactly the `master` and `development` branches.
