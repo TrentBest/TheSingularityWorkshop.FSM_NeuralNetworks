@@ -1,0 +1,33 @@
+name: NeuralNetworks .NET
+
+on:
+  push:
+    branches: [development, master]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '.github/workflows/neuralnetworks-dotnet.yml'
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '.github/workflows/neuralnetworks-dotnet.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Restore
+        run: dotnet restore tests/FsmNeuralNetworks.Tests/FsmNeuralNetworks.Tests.csproj
+      - name: Build
+        run: dotnet build tests/FsmNeuralNetworks.Tests/FsmNeuralNetworks.Tests.csproj --configuration Release --no-restore
+      - name: Test
+        run: dotnet test tests/FsmNeuralNetworks.Tests/FsmNeuralNetworks.Tests.csproj --configuration Release --no-build --logger "trx;LogFileName=neuralnetworks-tests.trx"
