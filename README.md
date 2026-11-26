@@ -46,6 +46,9 @@ The expected output is `[4, 3]`. This fixture is intended to become the shared C
 
 ## 3. Documentation
 
+Start with the [Neural Networks theory and experiments guide](Documentation/Architecture/NEURAL_NETWORKS_THEORY_AND_EXPERIMENTS.md) for the mathematics, graph model, tensor semantics, inference-versus-training boundary, and planned hands-on experiments.
+
+
 | Document | Responsibility |
 |---|---|
 | [Architecture](Documentation/Architecture/ARCHITECTURE.md) | Domain boundaries, model vocabulary, execution flow, backend strategy, testing, and milestones |
