@@ -96,11 +96,11 @@ public sealed class NeuralGraph
             if (!edgeKeys.Add(key)) throw new ArgumentException("Duplicate edges are not allowed.", nameof(edges));
             if (!incoming.TryAdd(target.Id, edge))
                 throw new ArgumentException($"Node '{target.Id}' has more than one producer.", nameof(edges));
-            if (source.Width != target switch
+            if (source.Width != (target switch
                 {
                     DenseNode dense => dense.InputWidth,
                     _ => target.Width
-                })
+                }))
                 throw new ArgumentException($"Shape mismatch on edge '{source.Id}' -> '{target.Id}'.", nameof(edges));
             outgoing[source.Id].Add(target.Id);
             indegree[target.Id]++;
@@ -174,9 +174,9 @@ public sealed class EvaluationResult
     public bool TraceTruncated { get; }
 }
 
-public sealed class NeuralValidationException(string message) : Exception(message);
-public sealed class NeuralNumericalFailureException(string message) : ArithmeticException(message);
-public sealed class NeuralBudgetExceededException(string message) : Exception(message);
+public sealed class NeuralValidationException(string message) : Exception(message) { }
+public sealed class NeuralNumericalFailureException(string message) : ArithmeticException(message) { }
+public sealed class NeuralBudgetExceededException(string message) : Exception(message) { }
 
 /// <summary>Deterministic binary64 CPU reference evaluator for Input, Dense, and ReLU DAGs.</summary>
 public sealed class CpuReferenceEvaluator
