@@ -60,7 +60,7 @@ public sealed class EvaluatorTests
         Assert.Throws<NeuralBudgetExceededException>(() => new CpuReferenceEvaluator().Evaluate(
             Fixture(),
             new Dictionary<string, IReadOnlyList<double>> { ["input-0"] = new double[] { 2, 1 } },
-            new EvaluationBudget(1, 16, 64, 8, TimeSpan.FromSeconds(2))));
+            new EvaluationBudget(1, 16, 64, 8, 32, TimeSpan.FromSeconds(2))));
     }
 
     [Fact]
