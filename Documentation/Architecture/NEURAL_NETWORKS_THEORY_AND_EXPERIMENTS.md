@@ -1,6 +1,6 @@
 # Neural Networks — Theory, Models, and Experiments
 
-**Status:** Learning and design guide for the proposed NeuralNetworks MVP. The mathematics below is explanatory; only the browser lesson currently executes the tiny Dense + ReLU fixture. It is not yet the library evaluator.
+**Status:** Learning and design guide for the accepted NeuralNetworks MVP. The browser lesson remains an educational calculator; a first .NET 10 CPU reference evaluator now exists under `src/FsmNeuralNetworks`. Its build/test verification is pending the dedicated GitHub Actions workflow.
 
 ## 1. The central idea: a parameterized function
 
@@ -151,7 +151,7 @@ Performance claims must separate model math from orchestration, validation, trac
 
 ## 10. Status and implementation boundary
 
-The browser lesson is an educational calculator for one fixed Dense + ReLU fixture. It is not the production evaluator. The architecture and MVP contract are proposed; the contract explicitly requires owner acceptance or amendment before the first CPU evaluator implementation. GPU acceleration, training, recurrent execution, and live Hermit integration are not implemented claims.
+The browser lesson is an educational calculator for one fixed Dense + ReLU fixture. The first .NET 10 CPU reference evaluator has now been added for the accepted bounded stateless DAG profile, with initial tests and a dedicated CI workflow. Treat it as an initial implementation slice until exact-commit CI evidence is green. GPU acceleration, training, recurrent execution, and live Hermit integration are not implemented claims.
 
 - [Architecture](ARCHITECTURE.md)
 - [MVP contract decisions](MVP_CONTRACT_DECISIONS.md)
