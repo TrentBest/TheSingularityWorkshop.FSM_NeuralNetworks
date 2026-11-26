@@ -5,7 +5,7 @@ namespace FsmNeuralNetworks.Tests;
 
 public sealed class EvaluatorTests
 {
-    private static EvaluationBudget Budget(int trace = 8) => new(16, 16, 64, trace, TimeSpan.FromSeconds(2));
+    private static EvaluationBudget Budget(int trace = 8, int traceElements = 32) => new(16, 16, 64, trace, traceElements, TimeSpan.FromSeconds(2));
 
     private static NeuralGraph Fixture() => new(
         "fixture-v1",
@@ -37,7 +37,7 @@ public sealed class EvaluatorTests
         var result = new CpuReferenceEvaluator().Evaluate(
             Fixture(),
             new Dictionary<string, IReadOnlyList<double>> { ["input-0"] = new double[] { 2, 1 } },
-            Budget(trace: 2),
+            Budget(trace: 2, traceElements: 4),
             captureTrace: true);
 
         Assert.Equal(new[] { "input-0", "dense-0" }, result.Trace.Select(t => t.NodeId));
@@ -89,6 +89,33 @@ public sealed class EvaluatorTests
     public void RejectsMissingFiniteBudget()
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => Budget() with { MaxDuration = Timeout.InfiniteTimeSpan }.Validate());
+    }
+
+    [Fact]
+    public void ReportsNumericalOverflowInsteadOfReturningPartialOutput()
+    {
+        var graph = new NeuralGraph("overflow",
+            [new InputNode("input", 1), new DenseNode("dense", 1, 1, [2d], [0d])],
+            [new NeuralEdge("input", "values", "dense", "values")]);
+
+        Assert.Throws<NeuralNumericalFailureException>(() => new CpuReferenceEvaluator().Evaluate(
+            graph,
+            new Dictionary<string, IReadOnlyList<double>> { ["input"] = new double[] { 1e308 } },
+            Budget()));
+    }
+
+    [Fact]
+    public void TraceElementBudgetTruncatesWithoutAffectingInference()
+    {
+        var result = new CpuReferenceEvaluator().Evaluate(
+            Fixture(),
+            new Dictionary<string, IReadOnlyList<double>> { ["input-0"] = new double[] { 2, 1 } },
+            Budget(trace: 8, traceElements: 2),
+            captureTrace: true);
+
+        Assert.Single(result.Trace);
+        Assert.True(result.TraceTruncated);
+        Assert.Equal(new[] { 4d, 3d }, result.Outputs["relu-0.values"]);
     }
 
     [Fact]
